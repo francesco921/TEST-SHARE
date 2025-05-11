@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabase";
 
 type QuizQuestion = {
   question: string;
@@ -15,19 +16,33 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || typeof id !== "string") return;
 
-    fetch(`/quizzes/${id}.json`)
-      .then((res) => res.json())
-      .then((data: QuizQuestion[]) => {
-        setQuiz(data);
-        setAnswers(Array(data.length).fill(""));
-      })
-      .catch(() => {
-        console.error("Quiz non trovato.");
-      });
+    const fetchQuiz = async () => {
+      const { data, error } = await supabase
+        .from("quizzes")
+        .select("data")
+        .eq("id", id)
+        .single();
+
+      if (error || !data) {
+        console.error("Quiz non trovato o errore:", error);
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      const parsed = data.data as QuizQuestion[];
+      setQuiz(parsed);
+      setAnswers(Array(parsed.length).fill(""));
+      setLoading(false);
+    };
+
+    fetchQuiz();
   }, [id]);
 
   const handleChange = (index: number, value: string) => {
@@ -37,17 +52,18 @@ export default function QuizPage() {
   };
 
   const handleSubmit = () => {
-    let count = 0;
+    let correct = 0;
     quiz.forEach((q, i) => {
       if (answers[i] === q.correctAnswer) {
-        count++;
+        correct++;
       }
     });
-    setScore(count);
+    setScore(correct);
     setSubmitted(true);
   };
 
-  if (!quiz.length) return <p>Caricamento...</p>;
+  if (loading) return <p style={{ padding: "2rem" }}>Caricamento quiz...</p>;
+  if (notFound) return <p style={{ padding: "2rem", color: "red" }}>Quiz non trovato.</p>;
 
   return (
     <div style={{ maxWidth: "800px", margin: "auto", padding: "2rem" }}>
