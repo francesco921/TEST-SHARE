@@ -1,0 +1,52 @@
+[
+  {
+    "question": "What is 2 + 2?",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "correctAnswer": "B"
+  },
+  {
+    "question": "Capital of Italy?",
+    "options": [
+      "Paris",
+      "Berlin",
+      "Rome",
+      "Madrid"
+    ],
+    "correctAnswer": "C"
+  },
+  {
+    "question": "What color is the sky on a clear day?",
+    "options": [
+      "Blue",
+      "Green",
+      "Red",
+      "Yellow"
+    ],
+    "correctAnswer": "A"
+  },
+  {
+    "question": "Which is the largest planet in our solar system?",
+    "options": [
+      "Earth",
+      "Mars",
+      "Jupiter",
+      "Venus"
+    ],
+    "correctAnswer": "C"
+  },
+  {
+    "question": "Who wrote 'Romeo and Juliet'?",
+    "options": [
+      "Charles Dickens",
+      "William Shakespeare",
+      "Jane Austen",
+      "Mark Twain"
+    ],
+    "correctAnswer": "B"
+  }
+]

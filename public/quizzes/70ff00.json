@@ -1,0 +1,52 @@
+[
+  {
+    "question": "Qual è la capitale della Spagna?",
+    "options": [
+      "Barcellona",
+      "Madrid",
+      "Valencia",
+      "Siviglia"
+    ],
+    "correctAnswer": "B"
+  },
+  {
+    "question": "Quanto fa 15 diviso 3?",
+    "options": [
+      "4",
+      "5",
+      "3",
+      "6"
+    ],
+    "correctAnswer": "B"
+  },
+  {
+    "question": "Chi ha scritto 'Divina Commedia'?",
+    "options": [
+      "Boccaccio",
+      "Dante",
+      "Petrarca",
+      "Manzoni"
+    ],
+    "correctAnswer": "B"
+  },
+  {
+    "question": "Colore complementare del rosso?",
+    "options": [
+      "Verde",
+      "Blu",
+      "Giallo",
+      "Viola"
+    ],
+    "correctAnswer": "B"
+  },
+  {
+    "question": "Punto di ebollizione dell'acqua in °C?",
+    "options": [
+      "90",
+      "100",
+      "80",
+      "120"
+    ],
+    "correctAnswer": "B"
+  }
+]
