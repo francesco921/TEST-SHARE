@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
+// Tipi domanda
 type QuizQuestion = {
   question: string;
   options: string[];
@@ -66,26 +67,46 @@ export default function QuizPage() {
     }
   };
 
-  if (loading) return <p style={{ padding: "2rem" }}>Caricamento quiz...</p>;
-  if (notFound) return <p style={{ padding: "2rem", color: "red" }}>Quiz non trovato.</p>;
+  if (loading) return <p className="text-center p-8">Caricamento quiz...</p>;
+  if (notFound)
+    return <p className="text-center p-8 text-red-500">Quiz non trovato.</p>;
 
   if (submitted) {
     return (
-      <div style={{ maxWidth: "800px", margin: "auto", padding: "2rem" }}>
-        <h2>Punteggio: {score} / {quiz.length}</h2>
+      <div className="max-w-2xl mx-auto p-6">
+        <h2 className="text-2xl font-semibold mb-4">
+          Punteggio: {score} / {quiz.length}
+        </h2>
         {quiz.map((q, i) => (
-          <div key={i} style={{ marginBottom: "1rem" }}>
-            <p><strong>{i + 1}.</strong> {q.question}</p>
-            <p>
-              Risposta data: <strong>{answers[i] || "—"}</strong> —{" "}
-              {answers[i] === q.correctAnswer ? (
-                <span style={{ color: "green" }}>corretto</span>
-              ) : (
-                <span style={{ color: "red" }}>
-                  sbagliato (giusto: {q.correctAnswer})
-                </span>
-              )}
+          <div
+            key={i}
+            className="mb-6 p-4 border border-gray-300 rounded-md shadow-sm"
+          >
+            <p className="font-medium mb-2">
+              <strong>{i + 1}.</strong> {q.question}
             </p>
+            <ul className="ml-4">
+              {q.options.map((opt, j) => {
+                const letter = ["A", "B", "C", "D"][j];
+                const isUser = answers[i] === letter;
+                const isCorrect = q.correctAnswer === letter;
+                return (
+                  <li
+                    key={letter}
+                    className={`mb-1 ${
+                      isCorrect
+                        ? "text-green-600 font-semibold"
+                        : isUser
+                        ? "text-red-500"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {letter}) {opt}
+                    {isCorrect ? " (corretta)" : isUser ? " (tua risposta)" : ""}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         ))}
       </div>
@@ -94,28 +115,35 @@ export default function QuizPage() {
 
   const q = quiz[currentIndex];
   return (
-    <div style={{ maxWidth: "600px", margin: "auto", padding: "2rem" }}>
-      <h2>Domanda {currentIndex + 1} di {quiz.length}</h2>
-      <p><strong>{q.question}</strong></p>
-      {q.options.map((opt, j) => {
-        const letter = ["A", "B", "C", "D"][j];
-        return (
-          <label key={letter} style={{ display: "block", marginTop: "0.5rem" }}>
-            <input
-              type="radio"
-              name={`q-${currentIndex}`}
-              value={letter}
-              checked={selectedAnswer === letter}
-              onChange={() => setSelectedAnswer(letter)}
-            />
-            {` ${letter}) ${opt}`}
-          </label>
-        );
-      })}
+    <div className="max-w-xl mx-auto p-6">
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold mb-2">
+          Domanda {currentIndex + 1} di {quiz.length}
+        </h2>
+        <p className="mb-4">{q.question}</p>
+        {q.options.map((opt, j) => {
+          const letter = ["A", "B", "C", "D"][j];
+          return (
+            <label key={letter} className="block mb-2 cursor-pointer">
+              <input
+                type="radio"
+                name={`q-${currentIndex}`}
+                value={letter}
+                checked={selectedAnswer === letter}
+                onChange={() => setSelectedAnswer(letter)}
+                className="mr-2"
+              />
+              {letter}) {opt}
+            </label>
+          );
+        })}
+      </div>
       <button
         onClick={handleNext}
         disabled={!selectedAnswer}
-        style={{ marginTop: "1.5rem" }}
+        className={`px-4 py-2 rounded-md text-white font-semibold ${
+          selectedAnswer ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+        }`}
       >
         {currentIndex + 1 === quiz.length ? "Vedi risultato" : "Avanti"}
       </button>
