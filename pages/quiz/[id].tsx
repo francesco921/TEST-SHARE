@@ -1,8 +1,6 @@
 import { useRouter } from "next/router";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 type QuizQuestion = {
   question: string;
@@ -13,7 +11,6 @@ type QuizQuestion = {
 export default function QuizPage() {
   const router = useRouter();
   const { id } = router.query;
-  const resultRef = useRef<HTMLDivElement>(null);
 
   const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -69,79 +66,56 @@ export default function QuizPage() {
     }
   };
 
-  const handleDownloadPDF = async () => {
-    if (!resultRef.current) return;
-    const canvas = await html2canvas(resultRef.current);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF();
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("quiz_risultati.pdf");
-  };
-
-  if (loading) return <p className="quiz-container">Caricamento quiz...</p>;
-  if (notFound) return <p className="quiz-container">Quiz non trovato.</p>;
+  if (loading) return <p style={{ padding: "2rem" }}>Caricamento quiz...</p>;
+  if (notFound) return <p style={{ padding: "2rem", color: "red" }}>Quiz non trovato.</p>;
 
   if (submitted) {
     return (
-      <div className="quiz-container" ref={resultRef}>
+      <div style={{ maxWidth: "800px", margin: "auto", padding: "2rem" }}>
         <h2>Punteggio: {score} / {quiz.length}</h2>
         {quiz.map((q, i) => (
-          <div key={i} className="result-block">
+          <div key={i} style={{ marginBottom: "1rem" }}>
             <p><strong>{i + 1}.</strong> {q.question}</p>
-            <ul>
-              {q.options.map((opt, j) => {
-                const letter = ["A", "B", "C", "D"][j];
-                const isUser = answers[i] === letter;
-                const isCorrect = q.correctAnswer === letter;
-                return (
-                  <li key={letter} className={
-                    isCorrect
-                      ? "correct"
-                      : isUser
-                      ? "incorrect"
-                      : ""
-                  }>
-                    {letter}) {opt} {isCorrect ? "(corretta)" : isUser ? "(tua risposta)" : ""}
-                  </li>
-                );
-              })}
-            </ul>
+            <p>
+              Risposta data: <strong>{answers[i] || "—"}</strong> —{" "}
+              {answers[i] === q.correctAnswer ? (
+                <span style={{ color: "green" }}>corretto</span>
+              ) : (
+                <span style={{ color: "red" }}>
+                  sbagliato (giusto: {q.correctAnswer})
+                </span>
+              )}
+            </p>
           </div>
         ))}
-        <button onClick={handleDownloadPDF} className="button">Scarica PDF</button>
       </div>
     );
   }
 
   const q = quiz[currentIndex];
   return (
-    <div className="quiz-container">
+    <div style={{ maxWidth: "600px", margin: "auto", padding: "2rem" }}>
       <h2>Domanda {currentIndex + 1} di {quiz.length}</h2>
-      <div className="question">
-        <p><strong>{q.question}</strong></p>
-        {q.options.map((opt, j) => {
-          const letter = ["A", "B", "C", "D"][j];
-          return (
-            <label key={letter} className="option">
-              <input
-                type="radio"
-                name={`q-${currentIndex}`}
-                value={letter}
-                checked={selectedAnswer === letter}
-                onChange={() => setSelectedAnswer(letter)}
-              />
-              {letter}) {opt}
-            </label>
-          );
-        })}
-      </div>
+      <p><strong>{q.question}</strong></p>
+      {q.options.map((opt, j) => {
+        const letter = ["A", "B", "C", "D"][j];
+        return (
+          <label key={letter} style={{ display: "block", marginTop: "0.5rem" }}>
+            <input
+              type="radio"
+              name={`q-${currentIndex}`}
+              value={letter}
+              checked={selectedAnswer === letter}
+              onChange={() => setSelectedAnswer(letter)}
+            />
+            {` ${letter}) ${opt}`}
+          </label>
+        );
+      })}
       <button
         onClick={handleNext}
         disabled={!selectedAnswer}
-        className="button"
+        style={{ marginTop: "1.5rem" }}
       >
         {currentIndex + 1 === quiz.length ? "Vedi risultato" : "Avanti"}
       </button>
