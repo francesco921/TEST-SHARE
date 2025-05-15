@@ -1,8 +1,10 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "../../lib/supabase";
+import "../../styles/quiz.css";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
-// Tipi domanda
 type QuizQuestion = {
   question: string;
   options: string[];
@@ -12,6 +14,7 @@ type QuizQuestion = {
 export default function QuizPage() {
   const router = useRouter();
   const { id } = router.query;
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -67,71 +70,69 @@ export default function QuizPage() {
     }
   };
 
-  if (loading) return <p className="text-center p-8">Caricamento quiz...</p>;
-  if (notFound)
-    return <p className="text-center p-8 text-red-500">Quiz non trovato.</p>;
+  const handleDownloadPDF = async () => {
+    if (!resultRef.current) return;
+    const canvas = await html2canvas(resultRef.current);
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF();
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("quiz_risultati.pdf");
+  };
+
+  if (loading) return <p className="quiz-container">Caricamento quiz...</p>;
+  if (notFound) return <p className="quiz-container">Quiz non trovato.</p>;
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto p-6">
-        <h2 className="text-2xl font-semibold mb-4">
-          Punteggio: {score} / {quiz.length}
-        </h2>
+      <div className="quiz-container" ref={resultRef}>
+        <h2>Punteggio: {score} / {quiz.length}</h2>
         {quiz.map((q, i) => (
-          <div
-            key={i}
-            className="mb-6 p-4 border border-gray-300 rounded-md shadow-sm"
-          >
-            <p className="font-medium mb-2">
-              <strong>{i + 1}.</strong> {q.question}
-            </p>
-            <ul className="ml-4">
+          <div key={i} className="result-block">
+            <p><strong>{i + 1}.</strong> {q.question}</p>
+            <ul>
               {q.options.map((opt, j) => {
                 const letter = ["A", "B", "C", "D"][j];
                 const isUser = answers[i] === letter;
                 const isCorrect = q.correctAnswer === letter;
                 return (
-                  <li
-                    key={letter}
-                    className={`mb-1 ${
-                      isCorrect
-                        ? "text-green-600 font-semibold"
-                        : isUser
-                        ? "text-red-500"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {letter}) {opt}
-                    {isCorrect ? " (corretta)" : isUser ? " (tua risposta)" : ""}
+                  <li key={letter} className={
+                    isCorrect
+                      ? "correct"
+                      : isUser
+                      ? "incorrect"
+                      : ""
+                  }>
+                    {letter}) {opt} {isCorrect ? "(corretta)" : isUser ? "(tua risposta)" : ""}
                   </li>
                 );
               })}
             </ul>
           </div>
         ))}
+        <button onClick={handleDownloadPDF} className="button">Scarica PDF</button>
       </div>
     );
   }
 
   const q = quiz[currentIndex];
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-2">
-          Domanda {currentIndex + 1} di {quiz.length}
-        </h2>
-        <p className="mb-4">{q.question}</p>
+    <div className="quiz-container">
+      <h2>Domanda {currentIndex + 1} di {quiz.length}</h2>
+      <div className="question">
+        <p><strong>{q.question}</strong></p>
         {q.options.map((opt, j) => {
           const letter = ["A", "B", "C", "D"][j];
           return (
-            <label key={letter} className="block mb-2 cursor-pointer">
+            <label key={letter} className="option">
               <input
                 type="radio"
                 name={`q-${currentIndex}`}
                 value={letter}
                 checked={selectedAnswer === letter}
                 onChange={() => setSelectedAnswer(letter)}
-                className="mr-2"
               />
               {letter}) {opt}
             </label>
@@ -141,9 +142,7 @@ export default function QuizPage() {
       <button
         onClick={handleNext}
         disabled={!selectedAnswer}
-        className={`px-4 py-2 rounded-md text-white font-semibold ${
-          selectedAnswer ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
-        }`}
+        className="button"
       >
         {currentIndex + 1 === quiz.length ? "Vedi risultato" : "Avanti"}
       </button>
