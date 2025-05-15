@@ -1,7 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../../lib/supabase";
-import "../../styles/quiz.css";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
