@@ -82,14 +82,14 @@ export default function QuizPage() {
   const next = () => setCurrentIndex((prev) => Math.min(prev + 1, quiz.length - 1));
   const prev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
-  if (loading) return <p style={{ padding: "2rem" }}>Caricamento...</p>;
-  if (notFound) return <p style={{ padding: "2rem", color: "red" }}>Quiz non trovato.</p>;
+  if (loading) return <p className="p-8">Caricamento...</p>;
+  if (notFound) return <p className="p-8 text-red-600">Quiz non trovato.</p>;
 
   if (submitted) {
     return (
-      <div style={{ padding: "2rem", maxWidth: "800px", margin: "auto" }}>
+      <div className="p-8 max-w-4xl mx-auto">
         <div id="quiz-result">
-          <h2>Punteggio: {score} / {quiz.length}</h2>
+          <h2 className="text-2xl font-bold mb-6">Punteggio: {score} / {quiz.length}</h2>
           {quiz.map((q, i) => {
             const userAns = answers[i];
             const correctLetter = q.correctAnswer;
@@ -97,14 +97,14 @@ export default function QuizPage() {
             const userText = q.options["ABCD".indexOf(userAns)] || "—";
             const isCorrect = userAns === correctLetter;
             return (
-              <div key={i} style={{ marginBottom: "1rem" }}>
-                <p><strong>{i + 1}. {q.question}</strong></p>
+              <div key={i} className="mb-4">
+                <p className="font-semibold">{i + 1}. {q.question}</p>
                 <p>
                   Risposta data: <strong>{userAns || "—"}) {userText}</strong> —{" "}
                   {isCorrect ? (
-                    <span style={{ color: "green" }}>corretto</span>
+                    <span className="text-green-600">corretto</span>
                   ) : (
-                    <span style={{ color: "red" }}>
+                    <span className="text-red-600">
                       sbagliato (giusta: {correctLetter}) {correctText}
                     </span>
                   )}
@@ -115,14 +115,7 @@ export default function QuizPage() {
         </div>
         <button
           onClick={handleDownloadPDF}
-          style={{
-            marginTop: "2rem",
-            padding: "0.5rem 1rem",
-            backgroundColor: "#2563eb",
-            color: "white",
-            border: "none",
-            borderRadius: "4px"
-          }}
+          className="mt-6 px-4 py-2 bg-blue-600 text-white rounded"
         >
           Scarica PDF
         </button>
@@ -134,65 +127,95 @@ export default function QuizPage() {
   const selected = answers[currentIndex];
 
   return (
-    <div style={{ display: "flex", padding: "2rem" }}>
+    <div className="flex min-h-screen bg-gray-50 text-gray-900">
       {/* Sidebar domande */}
-      <div style={{ width: "200px", marginRight: "2rem" }}>
-        <h4>Domande</h4>
-        {quiz.map((_, i) => (
+      <aside className="w-64 border-r bg-white px-6 py-8 space-y-3">
+        <h2 className="text-lg font-semibold mb-4">Domande</h2>
+        <ul className="space-y-2">
+          {quiz.map((_, i) => (
+            <li key={i}>
+              <button
+                onClick={() => goTo(i)}
+                className={`block w-full text-left rounded px-4 py-2 text-sm border transition ${
+                  i === currentIndex
+                    ? "bg-blue-100 border-blue-500 font-semibold"
+                    : answers[i]
+                    ? "bg-green-50 border-green-300"
+                    : "bg-gray-50 border-gray-200"
+                }`}
+              >
+                Domanda {i + 1}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+      {/* Contenuto principale */}
+      <main className="flex-1 p-10">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-xl font-bold">
+            Domanda {currentIndex + 1} di {quiz.length}
+          </h1>
           <button
-            key={i}
-            onClick={() => goTo(i)}
-            style={{
-              display: "block",
-              marginBottom: "4px",
-              padding: "6px",
-              backgroundColor: i === currentIndex ? "#dbeafe" : answers[i] ? "#dcfce7" : "#fef3c7",
-              border: "1px solid #ccc",
-              cursor: "pointer",
-              width: "100%",
-              textAlign: "left",
-            }}
+            onClick={handleDownloadPDF}
+            className="text-sm bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
           >
-            {i + 1}. {answers[i] ? "✓" : "—"}
-          </button>
-        ))}
-      </div>
-
-      {/* Contenuto domanda */}
-      <div style={{ flex: 1 }}>
-        <h3>Domanda {currentIndex + 1} di {quiz.length}</h3>
-        <p><strong>{current.question}</strong></p>
-        {current.options.map((opt, i) => {
-          const letter = "ABCD"[i];
-          return (
-            <label key={letter} style={{ display: "block", marginTop: "0.5rem" }}>
-              <input
-                type="radio"
-                name={`q-${currentIndex}`}
-                value={letter}
-                checked={selected === letter}
-                onChange={() => handleChange(letter)}
-              /> {letter}) {opt}
-            </label>
-          );
-        })}
-
-        <div style={{ marginTop: "2rem" }}>
-          <button onClick={prev} disabled={currentIndex === 0} style={{ marginRight: "1rem" }}>
-            ◀ Indietro
-          </button>
-          <button onClick={next} disabled={currentIndex === quiz.length - 1}>
-            Avanti ▶
+            Stampa PDF
           </button>
         </div>
 
-        <button
-          onClick={handleFinish}
-          style={{ marginTop: "2rem", backgroundColor: "#dc2626", color: "white", padding: "0.5rem 1rem" }}
-        >
-          Termina quiz
-        </button>
-      </div>
+        <h2 className="text-lg font-semibold mb-6">{current.question}</h2>
+
+        <div className="space-y-3 mb-10">
+          {current.options.map((opt, i) => {
+            const letter = "ABCD"[i];
+            return (
+              <label
+                key={letter}
+                className={`block border rounded-lg px-4 py-3 cursor-pointer transition ${
+                  selected === letter
+                    ? "bg-blue-100 border-blue-500"
+                    : "border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                <input
+                  type="radio"
+                  className="hidden"
+                  name={`q-${currentIndex}`}
+                  value={letter}
+                  checked={selected === letter}
+                  onChange={() => handleChange(letter)}
+                />
+                <span className="font-semibold mr-2">{letter})</span> {opt}
+              </label>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-4">
+          <button
+            onClick={prev}
+            className="bg-white border px-4 py-2 rounded text-sm disabled:opacity-50"
+            disabled={currentIndex === 0}
+          >
+            ← Indietro
+          </button>
+          <button
+            onClick={handleFinish}
+            className="bg-red-600 text-white px-4 py-2 rounded text-sm"
+          >
+            Termina quiz
+          </button>
+          <button
+            onClick={next}
+            className="bg-blue-600 text-white px-4 py-2 rounded text-sm disabled:opacity-50"
+            disabled={currentIndex === quiz.length - 1}
+          >
+            Avanti →
+          </button>
+        </div>
+      </main>
     </div>
   );
 }
